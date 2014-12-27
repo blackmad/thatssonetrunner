@@ -14,6 +14,7 @@ import secrets
 from StringIO import StringIO
 import textwrap
 import superWrapper
+import re
 
 parser = OptionParser()
 parser.add_option("-f", "--file", dest="filename",
@@ -223,19 +224,24 @@ def fillIdentityFromStatus(status):
 	matches = [Match(name = u'Type', value = u'Identity')]
 	user = status.user
 	image = user.profile_image_url.replace('_normal', '')
+	pattern = re.compile('#thatssonetrunner', re.IGNORECASE)
+	text = status.text
+	text = pattern.sub('', text)
+	text = text.strip()
+
 	fillDict = {
-		'Name': user.name,
+		'Name': user.name or 'No Name',
 		'Subtitle': 'aka ' + user.screen_name,
 		'Cost': '6',
-		'Rules': status.text,
-		'Keywords': user.description,
+		'Rules': text or 'Unknown',
+		'Keywords': user.description or 'Very Secretive.',
 		'Stat': '12',
 		'Requirement': '60'
 	}
 	print fillDict
 	print image
-	image = fillCard(matches, fillDict, image)
-	image.save(options.output)
+	return fillCard(matches, fillDict, image)
 
 #fillIdentityFromTestData()
-fillIdentityFromLatestTweet('doougle')
+#fillIdentityFromLatestTweet('doougle')
+
