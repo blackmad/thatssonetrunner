@@ -12,6 +12,8 @@ import urllib2 as urllib
 import io
 import secrets
 from StringIO import StringIO
+import textwrap
+import superWrapper
 
 parser = OptionParser()
 parser.add_option("-f", "--file", dest="filename",
@@ -55,8 +57,8 @@ def makeWordWrap(nodes):
 
 		return WordWrap(
 			shrinktofit = shrinktofit,
-			height = nodes[0].attributes['height'].value,
-			width = nodes[0].attributes['width'].value
+			height = int(nodes[0].attributes['height'].value),
+			width = int(nodes[0].attributes['width'].value)
 		)
 	else:
 		return None
@@ -136,7 +138,7 @@ def getRandomCardTemplate(matches):
 	return random.choice(getCardTemplates(matches))
 
 def getFilePath(f):
-	return os.path.join(os.path.dirname(options.filename).replace('/Proxy', ''), f)
+  return f
 
 #### FILL CARD
 def fillCard(matches, fillDict, profileImage):
@@ -167,32 +169,73 @@ def fillCard(matches, fillDict, profileImage):
 			print 'did not have entry for ' + k
 			continue
 		block = blocks[textBlock[0]]
-		
+
 		color = block.text.color
 		size = block.text.size
 
 		# TODO: ROTATE
 		# TODO: shrink to fit
 		# TOOD: wrap
+# WordWrap = collections.namedtuple('WordWrap', 'shrinktofit height width')
+		fontName = "resources/HelveticaNeue-Bold.ttf"
+		if block.wordwrap:
+			if k == 'Rules':
+				[fontSize, carlim] = superWrapper.optimizeFontSizeAndCarLim(
+					v, fontName, block.wordwrap.width, block.wordwrap.height)
+				lines = textwrap.wrap(v, carlim)
+				font = ImageFont.truetype(fontName, fontSize)
+				y_text = block.location.y
+				print lines
+				for line in lines:
+					print line
+					(width, height) = font.getsize(line)
+					draw.text((block.location.x, y_text), line, color, font = font)
+					y_text += height
+			else:
+				font = ImageFont.truetype(fontName, size)
+				(size_x, size_y) = draw.textsize(v, font)
+				while size_x > block.wordwrap.width:
+					v = ' '.join(v.split(' ')[:-1])
+					(size_x, size_y) = draw.textsize(v, font)
 
-		print block
-		font = ImageFont.truetype("resources/HelveticaNeue-Bold.ttf", size)
-		draw.text((block.location.x, block.location.y), v, color, font=font)
+				draw.text((block.location.x, block.location.y), v, fill=color, font=font)
+		else:
+			font = ImageFont.truetype(fontName, size)
+			draw.text((block.location.x, block.location.y), v, fill=color, font=font)
+	print 'done'
 	return image
 
-def fillIdentityFromTwitter():
-	api = secrets.getTwitterApi()
-
+def fillIdentityFromTestData():
 	matches = [Match(name = u'Type', value = u'Identity')]
+	fillDict = {'Rules': u'@cooper_smith I think all the child actors were far better cast than the adults', 'Keywords': u'geo, pois and other things', 'Cost': '0', 'Subtitle': u'aka blackmad', 'Name': u'David Blackman'}
+	image = 'https://pbs.twimg.com/profile_images/501513865822089217/cd_x6dNy.png'
+	image = fillCard(matches, fillDict, image)
+	print 'saving?'
+	image.save(options.output)
+
+def fillIdentityFromLatestTweet(user):
+	api = secrets.getTwitterApi()
+	statuses = api.GetUserTimeline(screen_name=user)
+	status = statuses[0]
+	fillIdentityFromStatus(status)
+
+def fillIdentityFromStatus(status):
+	matches = [Match(name = u'Type', value = u'Identity')]
+	user = status.user
+	image = user.profile_image_url.replace('_normal', '')
 	fillDict = {
-		'Name': 'blackmad',
-		'Subtitle': 'David Blackman',
-		'Cost': '12',
-		'Rules': 'these are his rules',
-		'Keywords': 'bio'
+		'Name': user.name,
+		'Subtitle': 'aka ' + user.screen_name,
+		'Cost': '6',
+		'Rules': status.text,
+		'Keywords': user.description,
+		'Stat': '12',
+		'Requirement': '60'
 	}
-	image = 'https://pbs.twimg.com/profile_images/501513865822089217/cd_x6dNy_400x400.png'
+	print fillDict
+	print image
 	image = fillCard(matches, fillDict, image)
 	image.save(options.output)
 
-fillIdentityFromTwitter()
+#fillIdentityFromTestData()
+fillIdentityFromLatestTweet('doougle')

@@ -3,7 +3,7 @@
       <blocks>
    <!-- Corp Identity Blocks-->
          <block type="text" id="corpIdent_name">
-           <location x="63" y="23" />
+           <location x="63" y="21" />
            <text color="#000000" size="17" />
            <wordwrap height="17" width="230" shrinktofit="True"/>
          </block>
@@ -160,21 +160,21 @@
          </block>
    <!-- Runner Identity Blocks-->
          <block type="text" id="runIdent_name">
-           <location x="111" y="16" />
+           <location x="111" y="12" />
            <text color="#000000" size="17" />
            <wordwrap height="19" width="230" shrinktofit="True" />
          </block>
          <block type="text" id="runIdent_subtitle">
-           <location x="147" y="39" />
-           <text color="#000000" size="12" />
+           <location x="147" y="38" />
+           <text color="#000000" size="11" />
          </block>
          <block type="text" id="runIdent_link">
-           <location x="20" y="31"/>
+           <location x="22" y="29"/>
            <text color="#FFFFFF" size="22" />
            <border color="#FFFFFF" size="1" />
          </block>
          <block type="text" id="runIdent_keywords">
-           <location x="119" y="326" />
+           <location x="119" y="328" />
            <text color="#000000" size="13" />
            <wordwrap height="13" width="160" />
          </block>
